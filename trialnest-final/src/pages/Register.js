@@ -13,7 +13,7 @@ export default function Register() {
   const { signup } = useAuth();
   const navigate   = useNavigate();
   const [form, setForm] = useState({ name:"", email:"", password:"", confirm:"", phone:"", vehicle:"" });
-  const [role, setRole] = useState("");
+  const [, setRole] = useState("");
   const [loading, setLoading] = useState(false);
   const set = k => e => setForm(f=>({...f,[k]:e.target.value}));
 
