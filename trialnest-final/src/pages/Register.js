@@ -4,31 +4,25 @@ import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
 import toast from "react-hot-toast";
 
-const ROLES = [
-  { key:"buyer",   icon:"🛍️", label:"Buyer",   sub:"Browse, trial & buy products" },
-  { key:"seller",  icon:"🏪", label:"Seller",  sub:"List products & manage trials" },
-];
-
 export default function Register() {
   const { signup } = useAuth();
   const navigate   = useNavigate();
-  const [form, setForm] = useState({ name:"", email:"", password:"", confirm:"", phone:"", vehicle:"" });
-  const [, setRole] = useState("");
+  const [form, setForm] = useState({ name:"", email:"", password:"", confirm:"" });
+  const [selectedRole, setSelectedRole] = useState("");
   const [loading, setLoading] = useState(false);
   const set = k => e => setForm(f=>({...f,[k]:e.target.value}));
 
   function handleSubmit(e) {
     e.preventDefault();
-    if (!role)                          return toast.error("Please select your role.");
+    if (!selectedRole)                  return toast.error("Please select your role.");
     if (!form.name.trim())              return toast.error("Enter your name.");
     if (form.password.length < 6)       return toast.error("Password must be 6+ characters.");
     if (form.password !== form.confirm) return toast.error("Passwords don't match.");
     setLoading(true);
     try {
-      const extra = {};
-      const user = signup(form.email, form.password, form.name.trim(), role, extra);
-      toast.success("Account created! Welcome to TrialNest 🎉");
-      navigate(role==="seller" ? "/seller/dashboard" : "/shop");
+      signup(form.email, form.password, form.name.trim(), selectedRole);
+      toast.success("Account created! Welcome 🎉");
+      navigate(selectedRole === "seller" ? "/seller/dashboard" : "/shop");
     } catch(err) { toast.error(err.message); }
     finally { setLoading(false); }
   }
@@ -39,11 +33,9 @@ export default function Register() {
         <div style={{position:"relative",zIndex:1}}>
           <div className="auth-logo">TrialNest</div>
           <h1 className="auth-heading">Experience it<br/>before you<br/>commit.</h1>
-          <p className="auth-sub" style={{marginTop:"1.5rem"}}>
-            TrialNest connects buyers and sellers through a seamless try-before-you-buy experience.
-          </p>
+          <p className="auth-sub" style={{marginTop:"1.5rem"}}>Try-before-you-buy with cart, payment and delivery.</p>
           <div style={{marginTop:"2rem",display:"flex",flexDirection:"column",gap:"0.8rem"}}>
-            {["🛍️ Try before you buy","🏠 Home trial delivery","🏪 In-store visit booking","✅ Buy only if you love it","🔔 Real-time notifications","🛒 Cart & instant checkout"].map(f=>(
+            {["🛍️ Try before you buy","🏠 Home trial delivery","💳 Pay seller directly","🛒 Cart & checkout","🔔 Live notifications"].map(f=>(
               <div key={f} style={{fontSize:"0.83rem",color:"rgba(250,249,246,0.65)"}}>{f}</div>
             ))}
           </div>
@@ -53,19 +45,22 @@ export default function Register() {
       <div className="auth-right">
         <div className="auth-form-wrap fade-in">
           <div className="auth-form-title">Create Account</div>
-          <div className="auth-form-sub">Join TrialNest — choose your role below</div>
+          <div className="auth-form-sub">Join TrialNest — choose your role</div>
           <form onSubmit={handleSubmit}>
-            {/* Role */}
+
             <div className="form-group">
-              <label className="form-label">I want to</label>
+              <label className="form-label">I am a</label>
               <div className="role-grid">
-                {ROLES.map(r=>(
-                  <div key={r.key} className={`role-card ${role===r.key?"selected":""}`} onClick={()=>setRole(r.key)}>
-                    <div className="role-card-icon">{r.icon}</div>
-                    <span className="role-card-label">{r.label}</span>
-                    <span className="role-card-sub">{r.sub}</span>
-                  </div>
-                ))}
+                <div className={`role-card ${selectedRole==="buyer"?"selected":""}`} onClick={()=>setSelectedRole("buyer")}>
+                  <div className="role-card-icon">🛍️</div>
+                  <span className="role-card-label">Buyer</span>
+                  <span className="role-card-sub">Browse, trial & buy</span>
+                </div>
+                <div className={`role-card ${selectedRole==="seller"?"selected":""}`} onClick={()=>setSelectedRole("seller")}>
+                  <div className="role-card-icon">🏪</div>
+                  <span className="role-card-label">Seller</span>
+                  <span className="role-card-sub">List & manage products</span>
+                </div>
               </div>
             </div>
 
@@ -88,9 +83,10 @@ export default function Register() {
               </div>
             </div>
             <button className="btn btn-primary btn-full btn-lg" disabled={loading} style={{marginTop:"0.5rem"}}>
-              {loading?"Creating…":"Create Account →"}
+              {loading ? "Creating…" : "Create Account →"}
             </button>
           </form>
+
           <div className="divider" style={{margin:"1.4rem 0"}}>or</div>
           <p style={{textAlign:"center",fontSize:"0.83rem",color:"#888"}}>
             Already have an account?{" "}
